@@ -14,8 +14,7 @@ dis-logger 127.0.0.1 3000
 - [x] Fire
 - [x] Detonation
 - [x] Electromagnetic Emission
-- [ ] IFF
-- [ ] Transmitter
+- [x] IFF
 
 # Dependency
 Crate clap for CLI https://crates.io/crates/clap  

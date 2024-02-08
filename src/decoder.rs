@@ -1,4 +1,6 @@
-use dis_rs::*;
+use dis_rs::enumerations::PduType;
+use dis_rs::model::{Pdu, PduBody};
+use dis_rs::parse;
 
 /*
  * Decode DIS message
@@ -20,6 +22,7 @@ pub fn decode(bytes: &[u8]) {
                 PduType::Fire => decode_fire(&pdu),
                 PduType::Detonation => decode_detonation(&pdu),
                 PduType::ElectromagneticEmission => decode_electromagnetic_emission(&pdu),
+                PduType::IFF => decode_iff(&pdu),
                 _ => decode_other(&pdu),
             }
         }
@@ -178,6 +181,49 @@ fn decode_electromagnetic_emission(pdu: &Pdu) {
         }
 
         println!(")))\n");
+    }
+}
+
+fn decode_iff(pdu: &Pdu) {
+    if let PduBody::IFF(pdu) = &pdu.body {
+        let emitting_entity = &pdu.emitting_entity_id;
+
+        println!("--- IFF ---",);
+
+        println!(
+            "    Emitting entity {}:{}:{}",
+            emitting_entity.simulation_address.site_id,
+            emitting_entity.simulation_address.application_id,
+            emitting_entity.entity_id
+        );
+
+        let fod = &pdu.fundamental_operational_data;
+        println!("    Mode 1 {:#b}", fod.parameter_1);
+        println!("    Mode 2 {:#b}", fod.parameter_2);
+        println!("    Mode 3a {:#b}", fod.parameter_3);
+        //println!("    Parameter4 {:#b}", fod.parameter_4);
+        println!("    Mode C {:#b}", fod.parameter_5);
+        //println!("    Parameter6 {:#b}", fod.parameter_6);
+
+        // Mode 5 and S
+        let layer3 = &pdu.layer_3; // Mode 5
+        let layer4 = &pdu.layer_4; // Mode S
+
+        if layer3.is_some() {
+            println!(
+                "    Mode 5 {:?}",
+                layer3.as_ref().unwrap().mode_5_basic_data
+            );
+        }
+
+        if layer4.is_some() {
+            println!(
+                "    Mode S {:?}",
+                layer4.as_ref().unwrap().mode_s_basic_data
+            );
+        }
+
+        println!("---\n");
     }
 }
 
